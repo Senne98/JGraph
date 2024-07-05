@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Thread.onSpinWait;
 import static java.lang.Thread.sleep;
 
 public class Graph2D {
@@ -211,35 +212,9 @@ public class Graph2D {
     public void addGraph(List<Double> pointsX, List<Double> pointsY, Color color) {
         if (pointsX.size() != pointsY.size()) throw new IllegalArgumentException("pointsX and pointsY must have the same size");
 
-        if (!xLimitsCustom) {
-            double xMin = pointsX.stream().min(Double::compareTo).get();
-            double xMax = pointsX.stream().max(Double::compareTo).get();
-
-            if (xMin < outerPointsX[0]) {
-                xLimits[0] = xMin - (outerPointsX[1] - xMin) / 10;
-                outerPointsX[0] = xMin;
-            }
-            if (xMax > outerPointsX[1]) {
-                xLimits[1] = xMax + (xMax - outerPointsX[0]) / 10;
-                outerPointsX[1] = xMax;
-            }
-        }
-
-        if (!yLimitsCustom) {
-            double yMin = pointsY.stream().min(Double::compareTo).get();
-            double yMax = pointsY.stream().max(Double::compareTo).get();
-
-            if (yMin < outerPointsY[0]) {
-                yLimits[0] = yMin - (outerPointsY[1] - yMin) / 10;
-                outerPointsY[0] = yMin;
-            }
-            if (yMax > outerPointsY[1]) {
-                yLimits[1] = yMax + (yMax - outerPointsY[0]) / 10;
-                outerPointsY[1] = yMax;
-            }
-        }
-
-        graphElements.add(new Graph(pointsX, pointsY, color));
+        Graph graph = new Graph(pointsX, pointsY, color);
+        graph.setGraphLimits();
+        graphElements.add(graph);
     }
 
     public void addPoint(double x, double y) {
@@ -258,28 +233,10 @@ public class Graph2D {
     }
 
     public void addPoint(double x, double y, Color color) {
-        graphElements.add(new Point(x, y, color));
+        Point point = new Point(x, y, color);
+        point.setGraphLimits();
 
-        if (!xLimitsCustom) {
-            if (x < outerPointsX[0]) {
-                xLimits[0] = x - (outerPointsX[1] - x) / 10;
-                outerPointsX[0] = x;
-            } else if (x > outerPointsX[1]) {
-                xLimits[1] = x + (x - outerPointsX[0]) / 10;
-                outerPointsX[1] = x;
-            }
-        }
-
-        if (!yLimitsCustom) {
-            if (y < outerPointsY[0]) {
-                yLimits[0] = y - (outerPointsY[1] - y) / 10;
-                outerPointsY[0] = y;
-            } else if (y > outerPointsY[1]) {
-                yLimits[1] = y + (y - outerPointsY[0]) / 10;
-                outerPointsY[1] = y;
-            }
-        }
-
+        graphElements.add(point);
     }
 
     public void addPointList(List<Double> x, List<Double> y) {
@@ -325,28 +282,9 @@ public class Graph2D {
         if (errorX != 0) error.setErrorX(errorX);
         if (errorY != 0) error.setErrorY(errorY);
 
+        error.setGraphLimits();
+
         graphElements.add(error);
-
-        if (!xLimitsCustom) {
-            if (x < outerPointsX[0]) {
-                xLimits[0] = x - (outerPointsX[1] - x) / 10;
-                outerPointsX[0] = x;
-            } else if (x > outerPointsX[1]) {
-                xLimits[1] = x + (x - outerPointsX[0]) / 10;
-                outerPointsX[1] = x;
-            }
-        }
-
-        if (!yLimitsCustom) {
-            if (y < outerPointsY[0]) {
-                yLimits[0] = y - (outerPointsY[1] - y) / 10;
-                outerPointsY[0] = y;
-            } else if (y > outerPointsY[1]) {
-                yLimits[1] = y + (y - outerPointsY[0]) / 10;
-                outerPointsY[1] = y;
-            }
-        }
-
     }
 
     public void addErrorBarList(List<Double> x, List<Double> y, List<Double> errorX, List<Double> errorY) {
@@ -407,22 +345,34 @@ public class Graph2D {
         this.showGrid = showGrid;
     }
 
-    /*public void logX() {
+    public void logX() {
         logX = true;
+        recalculateBoundaries();
     }
 
     public void logY() {
         logY = true;
+        recalculateBoundaries();
     }
 
     public void logLog() {
         logX = true;
         logY = true;
-    }*/
+        recalculateBoundaries();
+    }
 
     //plotting
 
     public void plot() {
+
+        //print the limits
+        System.out.println("xLimits: " + xLimits[0] + ", " + xLimits[1]);
+        System.out.println("yLimits: " + yLimits[0] + ", " + yLimits[1]);
+
+        //print log plot
+        System.out.println("logX: " + logX);
+        System.out.println("logY: " + logY);
+
         int width = (int) Math.ceil(verticalResolution * aspectRatio);
         int height = verticalResolution;
 
@@ -616,11 +566,197 @@ public class Graph2D {
         return new double[] {(bDLimits[0].add((spaceBetweenNumbers.subtract(bDLimits[0].remainder(spaceBetweenNumbers))).remainder(spaceBetweenNumbers))).doubleValue(), spaceBetweenNumbers.doubleValue()};
     }
 
+    double[] axisStartDistLog(double[] limits) {
+        BigDecimal bDLimits[] = new BigDecimal[] {new BigDecimal(String.valueOf(Math.log10(limits[0]))), new BigDecimal(String.valueOf(Math.log10(limits[1])))};
+
+        BigDecimal spaceBetweenNumbers = new BigDecimal("1");
+        BigDecimal distance = bDLimits[1].subtract(bDLimits[0]);
+
+        while (distance.compareTo(BigDecimal.TEN) == 1) {
+            spaceBetweenNumbers = spaceBetweenNumbers.multiply(new BigDecimal("5"));
+            distance = distance.divide(new BigDecimal("5"));
+        }
+
+        while (distance.compareTo(BigDecimal.ONE) == -1) {
+            spaceBetweenNumbers = spaceBetweenNumbers.divide(new BigDecimal("2"));
+            distance = distance.multiply(new BigDecimal("2"));
+        }
+
+        return new double[] {(bDLimits[0].add((spaceBetweenNumbers.subtract(bDLimits[0].remainder(spaceBetweenNumbers))).remainder(spaceBetweenNumbers))).doubleValue(), spaceBetweenNumbers.doubleValue()};
+    }
+
     void drawAxis(Graphics2D g, int width, int height) {
         AxisAnimation(g, width, height, 2, 1);
     }
 
     BufferedImage AxisAnimation(Graphics2D g, int width, int height, double axisAnimationFrames, int i) {
+        g.setColor(Color.BLACK);
+        g.setStroke(new BasicStroke(lineWidth));
+
+        double distancePercentage = (-(Math.cos(Math.PI * (i / (axisAnimationFrames - 1))) - 1) / 2);
+
+        int[] graphLocationX = {borderSize, (int) ((width - borderSize * 2) * distancePercentage + borderSize)};
+        int[] graphLocationY = {(int) ((height - 2 * borderSize) * (1 - distancePercentage) + borderSize), height - borderSize};
+
+        //x, y axis
+        g.drawLine(graphLocationX[0], graphLocationY[0], graphLocationX[0], graphLocationY[1]);
+        g.drawLine(graphLocationX[0], graphLocationY[1], graphLocationX[1], graphLocationY[1]);
+
+        if (logX) {
+            drawXAxisLog(g, graphLocationX, graphLocationY);
+        } else {
+            drawXAxisNormal(g, graphLocationX, graphLocationY);
+        }
+
+        if (logY) {
+            drawYAxisLog(g, graphLocationX, graphLocationY);
+        } else {
+            drawYAxisNormal(g, graphLocationX, graphLocationY);
+        }
+
+        g.drawLine(graphLocationX[0], borderSize, graphLocationX[1], borderSize);
+        g.drawLine(width - borderSize, graphLocationY[1], width - borderSize, graphLocationY[0]);
+        g.setStroke(new BasicStroke(lineWidth));
+
+        //title
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Calibri", Font.BOLD, fontSize * 2));
+        g.drawString(title, width / 2 - g.getFontMetrics().stringWidth(title) / 2, borderSize / 2 + fontSize);
+        g.setFont(new Font("Calibri", Font.BOLD, fontSize));
+
+        return image;
+    }
+
+    void drawXAxisNormal(Graphics2D g, int[] graphLocationX, int[] graphLocationY) {
+        //axis numbers
+        g.setColor(Color.BLACK);
+        g.setStroke(new BasicStroke(lineWidth));
+        double[] axisStartDistX = axisStartDist(xLimits);
+        double currentPointX = axisStartDistX[0];
+        double spaceBetweenNumbersX = axisStartDistX[1];
+
+        while (currentPointX <= xLimits[1]) {
+            double[] screenCoords = graphCoordsToScreenCoords(currentPointX, yLimits[0]);
+            if (screenCoords[0] > graphLocationX[1]) break;
+            g.drawLine((int) screenCoords[0], graphLocationY[1] - 10, (int) screenCoords[0], graphLocationY[1] + 10);
+            g.drawString(String.valueOf(currentPointX), (int) screenCoords[0] - g.getFontMetrics().stringWidth(String.valueOf(currentPointX)) / 2, graphLocationY[1] + 15 + fontSize);
+            currentPointX += spaceBetweenNumbersX;
+        }
+
+        //grid
+        if (showGrid) {
+            g.setPaint(new Color(0, 0, 0, 50));
+            g.setStroke(new BasicStroke(lineWidth/3));
+
+            currentPointX = axisStartDistX[0];
+            spaceBetweenNumbersX = axisStartDistX[1];
+
+            while (currentPointX < xLimits[1]) {
+                double[] screenCoords = graphCoordsToScreenCoords(currentPointX, yLimits[0]);
+                g.drawLine((int) screenCoords[0], graphLocationY[0], (int) screenCoords[0], graphLocationY[1]);
+                currentPointX += spaceBetweenNumbersX;
+            }
+        }
+    }
+
+    void drawXAxisLog(Graphics2D g, int[] graphLocationX, int[] graphLocationY) {
+        //axis numbers
+        g.setColor(Color.BLACK);
+        g.setStroke(new BasicStroke(lineWidth));
+        double[] axisStartDistX = axisStartDistLog(xLimits);
+        double currentPowerX = axisStartDistX[0];
+        double spaceBetweenPowersX = axisStartDistX[1];
+
+
+        while (Math.pow(10, currentPowerX) <= xLimits[1]) {
+            double[] screenCoords = graphCoordsToScreenCoords(Math.pow(10, currentPowerX), yLimits[0]);
+            if (screenCoords[0] > graphLocationX[1]) break;
+            g.drawLine((int) screenCoords[0], graphLocationY[1] - 10, (int) screenCoords[0], graphLocationY[1] + 10);
+            g.drawString(String.valueOf(Math.pow(10, currentPowerX)), (int) screenCoords[0] - g.getFontMetrics().stringWidth(String.valueOf(Math.pow(10, currentPowerX))) / 2, graphLocationY[1] + 15 + fontSize);
+            currentPowerX += spaceBetweenPowersX;
+        }
+
+        //grid
+        if (showGrid) {
+            g.setPaint(new Color(0, 0, 0, 50));
+            g.setStroke(new BasicStroke(lineWidth/3));
+
+            currentPowerX = axisStartDistX[0];
+            spaceBetweenPowersX = axisStartDistX[1];
+
+            while (Math.pow(10, currentPowerX) < xLimits[1]) {
+                double[] screenCoords = graphCoordsToScreenCoords(Math.pow(10, currentPowerX), yLimits[0]);
+                g.drawLine((int) screenCoords[0], graphLocationY[0], (int) screenCoords[0], graphLocationY[1]);
+                currentPowerX += spaceBetweenPowersX;
+            }
+        }
+    }
+
+    void drawYAxisNormal(Graphics2D g, int[] graphLocationX, int[] graphLocationY) {
+        //axis numbers
+        g.setColor(Color.BLACK);
+        g.setStroke(new BasicStroke(lineWidth));
+        double[] axisStartDistY = axisStartDist(yLimits);
+        double currentPointY = axisStartDistY[0];
+        double spaceBetweenNumbersY = axisStartDistY[1];
+
+        while (currentPointY <= yLimits[1]) {
+            double[] screenCoords = graphCoordsToScreenCoords(xLimits[0], currentPointY);
+            if (screenCoords[1] < graphLocationY[0]) break;
+            g.drawLine(graphLocationX[0] - 10, (int) screenCoords[1], graphLocationX[0] + 10, (int) screenCoords[1]);
+            g.drawString(String.valueOf(currentPointY), graphLocationX[0] - 25 - g.getFontMetrics().stringWidth(String.valueOf(currentPointY)), (int) screenCoords[1] + 5);
+            currentPointY += spaceBetweenNumbersY;
+        }
+
+        //grid
+        if (showGrid) {
+            g.setPaint(new Color(0, 0, 0, 50));
+            g.setStroke(new BasicStroke(lineWidth/3));
+
+            currentPointY = axisStartDistY[0];
+            spaceBetweenNumbersY = axisStartDistY[1];
+
+            while (currentPointY < yLimits[1]) {
+                double[] screenCoords = graphCoordsToScreenCoords(xLimits[0], currentPointY);
+                g.drawLine(graphLocationX[0], (int) screenCoords[1], graphLocationX[1], (int) screenCoords[1]);
+                currentPointY += spaceBetweenNumbersY;
+            }
+        }
+    }
+
+    void drawYAxisLog(Graphics2D g, int[] graphLocationX, int[] graphLocationY) {
+        //axis numbers
+        g.setColor(Color.BLACK);
+        g.setStroke(new BasicStroke(lineWidth));
+        double[] axisStartDistY = axisStartDistLog(yLimits);
+        double currentPowY = axisStartDistY[0];
+        double spaceBetweenPowY = axisStartDistY[1];
+
+        while (Math.pow(10, currentPowY) <= yLimits[1]) {
+            double[] screenCoords = graphCoordsToScreenCoords(xLimits[0], Math.pow(10, currentPowY));
+            if (screenCoords[1] < graphLocationY[0]) break;
+            g.drawLine(graphLocationX[0] - 10, (int) screenCoords[1], graphLocationX[0] + 10, (int) screenCoords[1]);
+            g.drawString(String.valueOf(Math.pow(10, currentPowY)), graphLocationX[0] - 25 - g.getFontMetrics().stringWidth(String.valueOf(Math.pow(10, currentPowY))), (int) screenCoords[1] + 5);
+            currentPowY += spaceBetweenPowY;
+        }
+
+        //grid
+        if (showGrid) {
+            g.setPaint(new Color(0, 0, 0, 50));
+            g.setStroke(new BasicStroke(lineWidth/3));
+
+            currentPowY = axisStartDistY[0];
+            spaceBetweenPowY = axisStartDistY[1];
+
+            while (Math.pow(10, currentPowY) < yLimits[1]) {
+                double[] screenCoords = graphCoordsToScreenCoords(xLimits[0], Math.pow(10, currentPowY));
+                g.drawLine(graphLocationX[0], (int) screenCoords[1], graphLocationX[1], (int) screenCoords[1]);
+                currentPowY += spaceBetweenPowY;
+            }
+        }
+    }
+
+    /*BufferedImage AxisAnimation(Graphics2D g, int width, int height, double axisAnimationFrames, int i) {
         g.setColor(Color.BLACK);
         g.setStroke(new BasicStroke(lineWidth));
 
@@ -693,26 +829,87 @@ public class Graph2D {
         g.setFont(new Font("Calibri", Font.BOLD, fontSize));
 
         return image;
-    }
+    }*/
 
     double[] graphCoordsToScreenCoords(double x, double y) {
-
-        if (logX) x = Math.log10(x);
-        if (logY) y = Math.log10(y);
 
         int width = (int) Math.ceil(verticalResolution * aspectRatio);
         int height = verticalResolution;
 
-        double lengthX = xLimits[1] - xLimits[0];
-        double lengthY = yLimits[1] - yLimits[0];
+        double percentageX = (float) width / (width - 2 * borderSize);
+        double percentageY = (float) height / (height - 2 * borderSize);
+
+        double xLim0;
+        double xLim1;
+        if (logX) {
+            xLim0 = Math.log10(xLimits[0]);
+            xLim1 = Math.log10(xLimits[1]);
+            x = Math.log10(x);
+        } else {
+            xLim0 = xLimits[0];
+            xLim1 = xLimits[1];
+        }
+
+        double yLim0;
+        double yLim1;
+        if (logY) {
+            yLim0 = Math.log10(yLimits[0]);
+            yLim1 = Math.log10(yLimits[1]);
+            y = Math.log10(y);
+        } else {
+            yLim0 = yLimits[0];
+            yLim1 = yLimits[1];
+        }
+
+        double lengthX = xLim1 - xLim0;;
+        double screenX = borderSize + ((x - xLim0) / lengthX) * (width / percentageX);;
+
+
+        double lengthY = yLim1 - yLim0;
+        double screenY = borderSize + (1 - ((y - yLim0) / lengthY)) * (height / percentageY);
+
+        return new double[] {screenX, screenY};
+    }
+
+    /*double[] graphCoordsToScreenCoords(double x, double y) {
+
+        int width = (int) Math.ceil(verticalResolution * aspectRatio);
+        int height = verticalResolution;
 
         double percentageX = (float) width / (width - 2 * borderSize);
         double percentageY = (float) height / (height - 2 * borderSize);
 
-        double screenX = borderSize + ((x - xLimits[0]) / lengthX) * (width / percentageX);
-        double screenY = borderSize + (1 - ((y - yLimits[0]) / lengthY)) * (height / percentageY);
+        double lengthX;
+        double screenX;
+        if (logX) {
+            x = Math.log10(x);
+            lengthX = Math.log10(xLimits[1]) - Math.log10(xLimits[0]);
+            screenX = borderSize + ((Math.log10(x) - Math.log10(xLimits[0])) / lengthX) * (width / percentageX);
+        } else {
+            lengthX = xLimits[1] - xLimits[0];
+            screenX = borderSize + ((x - xLimits[0]) / lengthX) * (width / percentageX);
+        }
+
+        double lengthY;
+        double screenY;
+        if (logY) {
+            y = Math.log10(y);
+            lengthY = Math.log10(yLimits[1]) - Math.log10(yLimits[0]);
+            screenY = borderSize + (1 - ((Math.log10(y) - Math.log10(yLimits[0])) / lengthY)) * (height / percentageY);
+        } else {
+            lengthY = yLimits[1] - yLimits[0];
+            screenY = borderSize + (1 - ((y - yLimits[0]) / lengthY)) * (height / percentageY);
+        }
 
         return new double[] {screenX, screenY};
+    }*/
+
+    void recalculateBoundaries() {
+        if (xLimitsCustom && yLimitsCustom) return;
+
+        for (GraphElement graph : graphElements) {
+            graph.setGraphLimits();
+        }
     }
 
     //objects
@@ -809,6 +1006,8 @@ public class Graph2D {
         }
 
         public void draw(Graphics2D g) {}
+
+        public void setGraphLimits() {}
     }
 
     class Graph extends GraphElement {
@@ -943,6 +1142,52 @@ public class Graph2D {
             this.y = y;
             return this;
         }
+
+        public void setGraphLimits() {
+            if (!xLimitsCustom) {
+                double xMin = x.stream().min(Double::compareTo).get();
+                double xMax = x.stream().max(Double::compareTo).get();
+
+                if (xMin < outerPointsX[0]) {
+                    if (logX) {
+                        xLimits[0] = Math.pow(Math.log10(xMin) - (Math.log10(outerPointsX[1]) - Math.log10(xMin)) / 10, 10);
+                    } else {
+                        xLimits[0] = xMin - (outerPointsX[1] - xMin) / 10;
+                    }
+                    outerPointsX[0] = xMin;
+                }
+                if (xMax > outerPointsX[1]) {
+                    if (logX) {
+                        xLimits[1] = Math.pow(Math.log10(xMax) + (Math.log10(outerPointsX[0]) - Math.log10(xMax)) / 10, 10);
+                    } else {
+                        xLimits[1] = xMax + (xMax - outerPointsX[0]) / 10;
+                    }
+                    outerPointsX[1] = xMax;
+                }
+            }
+
+            if (!yLimitsCustom) {
+                double yMin = y.stream().min(Double::compareTo).get();
+                double yMax = y.stream().max(Double::compareTo).get();
+
+                if (yMin < outerPointsY[0]) {
+                    if (logX) {
+                        yLimits[0] = Math.pow(Math.log10(yMin) - (Math.log10(outerPointsY[1]) - Math.log10(yMin)) / 10, 10);
+                    } else {
+                        yLimits[0] = yMin - (outerPointsY[1] - yMin) / 10;
+                    }
+                    outerPointsY[0] = yMin;
+                }
+                if (yMax > outerPointsY[1]) {
+                    if (logX) {
+                        yLimits[1] = Math.pow(Math.log10(yMax) + (Math.log10(outerPointsY[0]) - Math.log10(yMax)) / 10, 10);
+                    } else {
+                        yLimits[1] = yMax + (yMax - outerPointsY[0]) / 10;
+                    }
+                    outerPointsY[1] = yMax;
+                }
+            }
+        }
     }
 
     class Point extends GraphElement {
@@ -970,6 +1215,44 @@ public class Graph2D {
         public Point setShow(boolean show) {
             this.show = show;
             return this;
+        }
+
+        public void setGraphLimits() {
+            if (!xLimitsCustom) {
+                if (x < outerPointsX[0]) {
+                    if (logX) {
+                        xLimits[0] = Math.exp(Math.log10(x) - (Math.log10(outerPointsX[1]) - Math.log10(x)) / 10);
+                    } else {
+                        xLimits[0] = x - (outerPointsX[1] - x) / 10;
+                    }
+                    outerPointsX[0] = x;
+                } else if (x > outerPointsX[1]) {
+                    if (logX) {
+                        xLimits[1] = Math.exp(Math.log10(x) + (Math.log10(outerPointsX[0]) - Math.log10(x)) / 10);
+                    } else {
+                        xLimits[1] = x + (x - outerPointsX[0]) / 10;
+                    }
+                    outerPointsX[1] = x;
+                }
+            }
+
+            if (!yLimitsCustom) {
+                if (y < outerPointsY[0]) {
+                    if (logX) {
+                        yLimits[0] = Math.exp(Math.log10(y) - (Math.log10(outerPointsY[1]) - Math.log10(y)) / 10);
+                    } else {
+                        yLimits[0] = y - (outerPointsY[1] - y) / 10;
+                    }
+                    outerPointsY[0] = y;
+                } else if (y > outerPointsY[1]) {
+                    if (logX) {
+                        yLimits[1] = Math.exp(Math.log10(y) + (Math.log10(outerPointsY[0]) - Math.log10(y)) / 10);
+                    } else {
+                        yLimits[1] = y + (y - outerPointsY[0]) / 10;
+                    }
+                    outerPointsY[1] = y;
+                }
+            }
         }
     }
 
