@@ -77,3 +77,51 @@ If you want to add more elements you can do this with the following functions:
   ```
 Once again you can alway optionally give a color for the element.
 </details>
+
+<details>
+<summary><h4> Graph settings <h4></summary>
+<br>
+  
+ * Instead of ussing the generated limits for you graph, you can set your own with:
+    ```
+    public void setXLimits(double min, double max)
+    public void setYLimits(double min, double max)
+    ```
+* You can change the with of lines drawn with:
+  ```
+   public void setLineWith(float lineWidth)
+  ```
+* You can change the resolution and aspect ratio with:
+  ```
+  public void setVerticalResolution(int verticalResolution)
+  public void setAspectRatio(int x, int y)
+  ```
+* Set the font size:
+  ```
+  public void setFontSize(int fontSize)
+  ```
+* Show the grid with:
+  ```
+  public void setShowGrid(boolean showGrid)
+  ```
+* Change the axis to log with:
+  ```
+  public void logX()
+  public void logY()
+  public void logLog()
+  ```
+</details>
+
+<details>
+<summary><h4> Plotting <h4></summary>
+<br>
+  
+ * You can plot the graph with:
+   ```
+    public void plot()
+   ```
+* You can save the graph with:
+  ```
+    public void save()
+   ```
+</details>
