@@ -37,7 +37,7 @@ public class Main {
             y.add(Math.sin(valX));
         }
 
-        Graph2D graph2 = new Graph2D(x, y);
+        Graph2D graph2 = new Graph2D(x, y, "sinus graph");
         //graph2.setYLimits(0, 1);
         graph2.plot();
         graph2.save("sin");

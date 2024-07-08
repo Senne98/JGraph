@@ -364,15 +364,6 @@ public class Graph2D {
     //plotting
 
     public void plot() {
-
-        //print the limits
-        System.out.println("xLimits: " + xLimits[0] + ", " + xLimits[1]);
-        System.out.println("yLimits: " + yLimits[0] + ", " + yLimits[1]);
-
-        //print log plot
-        System.out.println("logX: " + logX);
-        System.out.println("logY: " + logY);
-
         int width = (int) Math.ceil(verticalResolution * aspectRatio);
         int height = verticalResolution;
 
