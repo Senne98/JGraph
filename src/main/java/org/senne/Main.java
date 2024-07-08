@@ -11,7 +11,7 @@ public class Main {
         Graph2D graph = new Graph2D(10d, 10d);
         graph.addGraph(List.of(1d, 2d, 3d, 4d, 5d), List.of(1d, 1d, 3d, 4d, 5d));
         graph.addErrorBar(2.5d, 2.5d, 0.5d, 0.5d);
-        //graph.logLog();
+        graph.logLog();
         //graph.addGraph(List.of(-1f, 2f, 3f, 4f, 5f), List.of(-1f, 2f, 3f, 4f, 5f));
         //graph.addGraph(List.of(-1f, 1f), List.of(-1f, 2f));
         //graph.addPoint(10f, 10f, new Color(255, 0, 174));
@@ -37,7 +37,7 @@ public class Main {
             y.add(Math.sin(valX));
         }
 
-        Graph2D graph2 = new Graph2D(x, y);
+        Graph2D graph2 = new Graph2D(x, y, "sinus graph");
         //graph2.setYLimits(0, 1);
         graph2.plot();
         graph2.save("sin");

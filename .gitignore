@@ -40,3 +40,8 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Test Files ###
+src/main/java/org/senne/Main.java
+*.png
+*.png
