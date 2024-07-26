@@ -1,6 +1,7 @@
 package org.senne;
 
 import org.senne.graphs.Graph2D;
+import org.senne.graphs.Graph2DOld;
 
 import java.io.IOException;
 import java.util.ArrayList;
