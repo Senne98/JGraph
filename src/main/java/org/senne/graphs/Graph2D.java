@@ -3,9 +3,11 @@ package org.senne.graphs;
 import org.senne.Style;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Thread.sleep;
+import static org.senne.utils.ListUtils.reverseList;
 
 public class Graph2D extends Base2D {
 
@@ -688,4 +690,97 @@ public class Graph2D extends Base2D {
         }
     }
 
+    class Area extends GraphElement {
+
+        List<Double> x1;
+        List<Double> y1;
+        List<Double> x2;
+        List<Double> y2;
+
+        public Area(List<Double> x1, List<Double> y1, List<Double> x2, List<Double> y2, Color color) {
+            super(color);
+            this.x1 = x1;
+            this.y1 = y1;
+            this.x2 = x2;
+            this.y2 = y2;
+        }
+
+        @Override
+        public void draw(Graphics2D g) {
+            g.setPaint(color);
+
+            List<Integer> xScreen = new ArrayList<>();
+            x1.forEach(d -> xScreen.add((int) graphCoordsToScreenCoords(d, 0)[0]));
+            reverseList(x2).forEach(d -> xScreen.add((int) graphCoordsToScreenCoords((Double) d, 0)[0]));
+
+            List<Integer> yScreen = new ArrayList<>();
+            y1.forEach(d -> yScreen.add((int) graphCoordsToScreenCoords(0, d)[1]));
+            reverseList(y2).forEach(d -> yScreen.add((int) graphCoordsToScreenCoords(0, (Double) d)[1]));
+
+            g.draw(new Polygon(xScreen.stream().mapToInt(i->i).toArray(), yScreen.stream().mapToInt(i->i).toArray(), x1.size() + x2.size()));
+        }
+
+        public Area setPoints(List<Double> x1, List<Double> y1, List<Double> x2, List<Double> y2) {
+            this.x1 = x1;
+            this.y1 = y1;
+            this.x2 = x2;
+            this.y2 = y2;
+            return this;
+        }
+
+        public void setGraphLimits() {
+            List<Double> x = new ArrayList<>();
+            x.addAll(x1);
+            x.addAll(x2);
+
+            List<Double> y = new ArrayList<>();
+            y.addAll(y1);
+            y.addAll(y2);
+
+            if (!xLimitsCustom) {
+
+                double xMin = x.stream().min(Double::compareTo).get();
+                double xMax = x.stream().max(Double::compareTo).get();
+
+                if (xMin < outerPointsX[0]) {
+                    if (logX) {
+                        xLimits[0] = Math.pow(Math.log10(xMin) - (Math.log10(outerPointsX[1]) - Math.log10(xMin)) / 10, 10);
+                    } else {
+                        xLimits[0] = xMin - (outerPointsX[1] - xMin) / 10;
+                    }
+                    outerPointsX[0] = xMin;
+                }
+                if (xMax > outerPointsX[1]) {
+                    if (logX) {
+                        xLimits[1] = Math.pow(Math.log10(xMax) + (Math.log10(outerPointsX[0]) - Math.log10(xMax)) / 10, 10);
+                    } else {
+                        xLimits[1] = xMax + (xMax - outerPointsX[0]) / 10;
+                    }
+                    outerPointsX[1] = xMax;
+                }
+            }
+
+            if (!yLimitsCustom) {
+                double yMin = y.stream().min(Double::compareTo).get();
+                double yMax = y.stream().max(Double::compareTo).get();
+
+                if (yMin < outerPointsY[0]) {
+                    if (logX) {
+                        yLimits[0] = Math.pow(Math.log10(yMin) - (Math.log10(outerPointsY[1]) - Math.log10(yMin)) / 10, 10);
+                    } else {
+                        yLimits[0] = yMin - (outerPointsY[1] - yMin) / 10;
+                    }
+                    outerPointsY[0] = yMin;
+                }
+                if (yMax > outerPointsY[1]) {
+                    if (logX) {
+                        yLimits[1] = Math.pow(Math.log10(yMax) + (Math.log10(outerPointsY[0]) - Math.log10(yMax)) / 10, 10);
+                    } else {
+                        yLimits[1] = yMax + (yMax - outerPointsY[0]) / 10;
+                    }
+                    outerPointsY[1] = yMax;
+                }
+            }
+        }
+    }
 }
