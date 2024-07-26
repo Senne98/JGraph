@@ -109,7 +109,7 @@ public abstract class Base2D {
         ImageIO.write(image, "png", new File(fileName + ".png"));
     }
 
-    public void animate(Graph2DOld.GraphAnimation2D animation, int frames, int delay) throws InterruptedException {
+    public void animate(GraphAnimation2D animation, int frames, int delay) throws InterruptedException {
         this.delay = delay;
 
         int width = (int) Math.ceil(verticalResolution * aspectRatio);
@@ -152,7 +152,7 @@ public abstract class Base2D {
         }
     }
 
-    public void saveAnimationFrames(Graph2DOld.GraphAnimation2D animation, int frames, String name) throws IOException {
+    public void saveAnimationFrames(GraphAnimation2D animation, int frames, String name) throws IOException {
 
         int width = (int) Math.ceil(verticalResolution * aspectRatio);
         int height = verticalResolution;
