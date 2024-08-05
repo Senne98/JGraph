@@ -3,165 +3,22 @@ package org.senne.graphs;
 import org.senne.Style;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Thread.sleep;
+import static org.senne.utils.ListUtils.reverseList;
 
 public class Graph2D extends Base2D {
 
     //constructors
 
-    public Graph2D(double x, double y) {
-        graphElements.add(new Point(x, y, Style.getPremierGraphColor()));
+    public Graph2D() {}
 
-        xLimits[0] = x - 1;
-        xLimits[1] = x + 1;
-        outerPointsX[0] = x;
-        outerPointsX[1] = x;
-
-        yLimits[0] = y - 1;
-        yLimits[1] = y + 1;
-        outerPointsY[0] = y;
-        outerPointsY[1] = y;
-    }
-
-    public Graph2D(double x, double y, Color color) {
-        graphElements.add(new Point(x, y, color));
-
-        xLimits[0] = x - 1;
-        xLimits[1] = x + 1;
-        outerPointsX[0] = x;
-        outerPointsX[1] = x;
-
-        yLimits[0] = y - 1;
-        yLimits[1] = y + 1;
-        outerPointsY[0] = y;
-        outerPointsY[1] = y;
-    }
-
-    public Graph2D(double x, double y, String title) {
-        graphElements.add(new Point(x, y, Style.getPremierGraphColor()));
-
-        this.title = title;
-
-        xLimits[0] = x - 1;
-        xLimits[1] = x + 1;
-        outerPointsX[0] = x;
-        outerPointsX[1] = x;
-
-        yLimits[0] = y - 1;
-        yLimits[1] = y + 1;
-        outerPointsY[0] = y;
-        outerPointsY[1] = y;
-    }
-
-    public Graph2D(double x, double y, Color color, String title) {
-        graphElements.add(new Point(x, y, color));
-
-        this.title = title;
-
-        xLimits[0] = x - 1;
-        xLimits[1] = x + 1;
-        outerPointsX[0] = x;
-        outerPointsX[1] = x;
-
-        yLimits[0] = y - 1;
-        yLimits[1] = y + 1;
-        outerPointsY[0] = y;
-        outerPointsY[1] = y;
-    }
-
-    public Graph2D(List<Double> pointsX, List<Double> pointsY) {
-        if (pointsX.size() != pointsY.size()) throw new IllegalArgumentException("pointsX and pointsY must have the same size");
-
-        graphElements.add(new Graph(pointsX, pointsY, Style.getPremierGraphColor()));
-
-        double xMin = pointsX.stream().min(Double::compareTo).get();
-        double xMax = pointsX.stream().max(Double::compareTo).get();
-
-        xLimits[0] = xMin - (xMax - xMin) / 10;
-        xLimits[1] = xMax + (xMax - xMin) / 10;
-        outerPointsX[0] = xMin;
-        outerPointsX[1] = xMax;
-
-        double yMin = pointsY.stream().min(Double::compareTo).get();
-        double yMax = pointsY.stream().max(Double::compareTo).get();
-
-        yLimits[0] = yMin - (yMax - yMin) / 10;
-        yLimits[1] = yMax + (yMax - yMin) / 10;
-        outerPointsY[0] = yMin;
-        outerPointsY[1] = yMax;
-    }
-
-    public Graph2D(List<Double> pointsX, List<Double> pointsY, Color color) {
-        if (pointsX.size() != pointsY.size()) throw new IllegalArgumentException("pointsX and pointsY must have the same size");
-
-        graphElements.add(new Graph(pointsX, pointsY, color));
-
-        double xMin = pointsX.stream().min(Double::compareTo).get();
-        double xMax = pointsX.stream().max(Double::compareTo).get();
-
-        xLimits[0] = xMin - (xMax - xMin) / 10;
-        xLimits[1] = xMax + (xMax - xMin) / 10;
-        outerPointsX[0] = xMin;
-        outerPointsX[1] = xMax;
-
-        double yMin = pointsY.stream().min(Double::compareTo).get();
-        double yMax = pointsY.stream().max(Double::compareTo).get();
-
-        yLimits[0] = yMin - (yMax - yMin) / 10;
-        yLimits[1] = yMax + (yMax - yMin) / 10;
-        outerPointsY[0] = yMin;
-        outerPointsY[1] = yMax;
-    }
-
-    public Graph2D(List<Double> pointsX, List<Double> pointsY, String title) {
-        if (pointsX.size() != pointsY.size()) throw new IllegalArgumentException("pointsX and pointsY must have the same size");
-
-        graphElements.add(new Graph(pointsX, pointsY, Style.getPremierGraphColor()));
-
-        double xMin = pointsX.stream().min(Double::compareTo).get();
-        double xMax = pointsX.stream().max(Double::compareTo).get();
-
-        xLimits[0] = xMin - (xMax - xMin) / 10;
-        xLimits[1] = xMax + (xMax - xMin) / 10;
-        outerPointsX[0] = xMin;
-        outerPointsX[1] = xMax;
-
-        double yMin = pointsY.stream().min(Double::compareTo).get();
-        double yMax = pointsY.stream().max(Double::compareTo).get();
-
-        yLimits[0] = yMin - (yMax - yMin) / 10;
-        yLimits[1] = yMax + (yMax - yMin) / 10;
-        outerPointsY[0] = yMin;
-        outerPointsY[1] = yMax;
-
+    public Graph2D(String title) {
         this.title = title;
     }
 
-    public Graph2D(List<Double> pointsX, List<Double> pointsY, Color color, String title) {
-        if (pointsX.size() != pointsY.size()) throw new IllegalArgumentException("pointsX and pointsY must have the same size");
-
-        graphElements.add(new Graph(pointsX, pointsY, color));
-
-        double xMin = pointsX.stream().min(Double::compareTo).get();
-        double xMax = pointsX.stream().max(Double::compareTo).get();
-
-        xLimits[0] = xMin - (xMax - xMin) / 10;
-        xLimits[1] = xMax + (xMax - xMin) / 10;
-        outerPointsX[0] = xMin;
-        outerPointsX[1] = xMax;
-
-        double yMin = pointsY.stream().min(Double::compareTo).get();
-        double yMax = pointsY.stream().max(Double::compareTo).get();
-
-        yLimits[0] = yMin - (yMax - yMin) / 10;
-        yLimits[1] = yMax + (yMax - yMin) / 10;
-        outerPointsY[0] = yMin;
-        outerPointsY[1] = yMax;
-
-        this.title = title;
-    }
 
     //graph elements
 
@@ -184,7 +41,7 @@ public class Graph2D extends Base2D {
         if (pointsX.size() != pointsY.size()) throw new IllegalArgumentException("pointsX and pointsY must have the same size");
 
         Graph graph = new Graph(pointsX, pointsY, color);
-        graph.setGraphLimits();
+        graph.setOuterPoints();
         graphElements.add(graph);
     }
 
@@ -205,7 +62,7 @@ public class Graph2D extends Base2D {
 
     public void addPoint(double x, double y, Color color) {
         Point point = new Point(x, y, color);
-        point.setGraphLimits();
+        point.setOuterPoints();
 
         graphElements.add(point);
     }
@@ -253,7 +110,7 @@ public class Graph2D extends Base2D {
         if (errorX != 0) error.setErrorX(errorX);
         if (errorY != 0) error.setErrorY(errorY);
 
-        error.setGraphLimits();
+        error.setOuterPoints();
 
         graphElements.add(error);
     }
@@ -276,6 +133,30 @@ public class Graph2D extends Base2D {
         for (int i = 0; i < x.size(); i++) {
             addErrorBar(x.get(i), y.get(i), color, errorX.get(i), errorY.get(i));
         }
+    }
+
+    public void addArea(List<Double> pointsX1, List<Double> pointsY1, List<Double> pointsX2, List<Double> pointsY2) {
+        Color color;
+        if ((graphElements.size() + 1) % 4 == 0) {
+            color = Style.getQuaternaryGraphColor();
+        } else if ((graphElements.size() + 1) % 3 == 0) {
+            color = Style.getTertiaryGraphColor();
+        } else if ((graphElements.size() + 1) % 2 == 0) {
+            color = Style.getSecondaryGraphColor();
+        } else {
+            color = Style.getPremierGraphColor();
+        }
+
+        addArea(pointsX1, pointsY1, pointsX2, pointsY2, color);
+    }
+
+    public void addArea(List<Double> pointsX1, List<Double> pointsY1, List<Double> pointsX2, List<Double> pointsY2, Color color) {
+        if (pointsX1.size() != pointsY1.size()) throw new IllegalArgumentException("pointsX1 and pointsY1 must have the same size");
+        if (pointsX2.size() != pointsY2.size()) throw new IllegalArgumentException("pointsX2 and pointsY2 must have the same size");
+
+        Area area = new Area(pointsX1, pointsY1, pointsX2, pointsY2, color);
+        area.setOuterPoints();
+        graphElements.add(area);
     }
 
     //animations
@@ -331,6 +212,67 @@ public class Graph2D extends Base2D {
         return this;
     }
 
+    public Graph2D setAreaState(int i, List<Double> pointsX1, List<Double> pointsY1, List<Double> pointsX2, List<Double> pointsY2) {
+        if (pointsX1.size() != pointsY1.size()) throw new IllegalArgumentException("pointsX1 and pointsY1 must have the same size");
+        if (pointsX2.size() != pointsY2.size()) throw new IllegalArgumentException("pointsX2 and pointsY2 must have the same size");
+
+        if (!(graphElements.get(i) instanceof Area)) throw new IllegalArgumentException("graph element at position " + i + " is not a valid graph element. Must be a Graph.");
+
+        if (!xLimitsCustom) {
+            double xMin = pointsX1.stream().min(Double::compareTo).get();
+            double xMax = pointsX1.stream().max(Double::compareTo).get();
+
+            if (xMin < outerPointsX[0]) {
+                xLimits[0] = xMin - (outerPointsX[1] - xMin) / 10;
+                outerPointsX[0] = xMin;
+            }
+            if (xMax > outerPointsX[1]) {
+                xLimits[1] = xMax + (xMax - outerPointsX[0]) / 10;
+                outerPointsX[1] = xMax;
+            }
+
+            xMin = pointsX2.stream().min(Double::compareTo).get();
+            xMax = pointsX2.stream().max(Double::compareTo).get();
+
+            if (xMin < outerPointsX[0]) {
+                xLimits[0] = xMin - (outerPointsX[1] - xMin) / 10;
+                outerPointsX[0] = xMin;
+            }
+            if (xMax > outerPointsX[1]) {
+                xLimits[1] = xMax + (xMax - outerPointsX[0]) / 10;
+                outerPointsX[1] = xMax;
+            }
+        }
+
+        if (!yLimitsCustom) {
+            double yMin = pointsY1.stream().min(Double::compareTo).get();
+            double yMax = pointsY1.stream().max(Double::compareTo).get();
+
+            if (yMin < outerPointsY[0]) {
+                yLimits[0] = yMin - (outerPointsY[1] - yMin) / 10;
+                outerPointsY[0] = yMin;
+            }
+            if (yMax > outerPointsY[1]) {
+                yLimits[1] = yMax + (yMax - outerPointsY[0]) / 10;
+                outerPointsY[1] = yMax;
+            }
+
+            yMin = pointsY2.stream().min(Double::compareTo).get();
+            yMax = pointsY2.stream().max(Double::compareTo).get();
+
+            if (yMin < outerPointsY[0]) {
+                yLimits[0] = yMin - (outerPointsY[1] - yMin) / 10;
+                outerPointsY[0] = yMin;
+            }
+            if (yMax > outerPointsY[1]) {
+                yLimits[1] = yMax + (yMax - outerPointsY[0]) / 10;
+                outerPointsY[1] = yMax;
+            }
+        }
+
+        ((Area) graphElements.get(i)).setPoints(pointsX1, pointsY1, pointsX2, pointsY2);
+        return this;
+    }
 
     // |-|  |--\ |-|  |-----|  |-----|  |-----|  |--\ |-|    /---\    |-|
     // | |  | |\\| |    | |    |--|     |_____|  | |\\| |   / /_\ \   | |
@@ -471,14 +413,55 @@ public class Graph2D extends Base2D {
             return this;
         }
 
-        public void setGraphLimits() {
-            if (!xLimitsCustom) {
+        @Override
+        public void setOuterPoints() {
+            double xMin = x.stream().min(Double::compareTo).get();
+            double xMax = x.stream().max(Double::compareTo).get();
+
+            double yMin = y.stream().min(Double::compareTo).get();
+            double yMax = y.stream().max(Double::compareTo).get();
+
+            if (graphElements.size() == 0) {
+                outerPointsX[0] = xMin;
+                outerPointsX[1] = xMax;
+                outerPointsY[0] = yMin;
+                outerPointsY[1] = yMax;
+                return;
+            }
+
+            if (xMin < outerPointsX[0]) {
+                outerPointsX[0] = xMin;
+            }
+            if (xMax > outerPointsX[1]) {
+                outerPointsX[1] = xMax;
+            }
+            if (yMin < outerPointsY[0]) {
+                outerPointsY[0] = yMin;
+            }
+            if (yMax > outerPointsY[1]) {
+                outerPointsY[1] = yMax;
+            }
+
+
+            /*if (!xLimitsCustom) {
                 double xMin = x.stream().min(Double::compareTo).get();
                 double xMax = x.stream().max(Double::compareTo).get();
 
+                if (graphElements.size() == 0) {
+                    outerPointsX[0] = xMin;
+                    outerPointsX[1] = xMax;
+                    if (logX) {
+                        xLimits[0] = Math.pow(10, Math.log10(xMin) - (Math.log10(outerPointsX[1]) - Math.log10(xMin)) / 10);
+                        xLimits[1] = Math.pow(10, Math.log10(xMax) + (Math.log10(outerPointsX[0]) - Math.log10(xMax)) / 10);
+                    } else {
+                        xLimits[0] = xMin - (outerPointsX[1] - xMin) / 10;
+                        xLimits[1] = xMax + (xMax - outerPointsX[0]) / 10;
+                    }
+                }
+
                 if (xMin < outerPointsX[0]) {
                     if (logX) {
-                        xLimits[0] = Math.pow(Math.log10(xMin) - (Math.log10(outerPointsX[1]) - Math.log10(xMin)) / 10, 10);
+                        xLimits[0] = Math.pow(10, Math.log10(xMin) - (Math.log10(outerPointsX[1]) - Math.log10(xMin)) / 10);
                     } else {
                         xLimits[0] = xMin - (outerPointsX[1] - xMin) / 10;
                     }
@@ -486,7 +469,7 @@ public class Graph2D extends Base2D {
                 }
                 if (xMax > outerPointsX[1]) {
                     if (logX) {
-                        xLimits[1] = Math.pow(Math.log10(xMax) + (Math.log10(outerPointsX[0]) - Math.log10(xMax)) / 10, 10);
+                        xLimits[1] = Math.pow(10, Math.log10(xMax) + (Math.log10(outerPointsX[0]) - Math.log10(xMax)) / 10);
                     } else {
                         xLimits[1] = xMax + (xMax - outerPointsX[0]) / 10;
                     }
@@ -498,23 +481,35 @@ public class Graph2D extends Base2D {
                 double yMin = y.stream().min(Double::compareTo).get();
                 double yMax = y.stream().max(Double::compareTo).get();
 
-                if (yMin < outerPointsY[0]) {
+                if (graphElements.size() == 0) {
+                    outerPointsY[0] = yMin;
+                    outerPointsY[1] = yMax;
                     if (logX) {
-                        yLimits[0] = Math.pow(Math.log10(yMin) - (Math.log10(outerPointsY[1]) - Math.log10(yMin)) / 10, 10);
+                        yLimits[0] = Math.pow(10, Math.log10(yMin) - (Math.log10(outerPointsY[1]) - Math.log10(yMin)) / 10);
+                        yLimits[1] = Math.pow(10, Math.log10(yMax) + (Math.log10(outerPointsY[0]) - Math.log10(yMax)) / 10);
+                    } else {
+                        yLimits[0] = yMin - (outerPointsY[1] - yMin) / 10;
+                        yLimits[1] = yMax + (yMax - outerPointsY[0]) / 10;
+                    }
+                }
+
+                if (yMin <= outerPointsY[0]) {
+                    if (logY) {
+                        yLimits[0] = Math.pow(10, Math.log10(yMin) - (Math.log10(outerPointsY[1]) - Math.log10(yMin)) / 10);
                     } else {
                         yLimits[0] = yMin - (outerPointsY[1] - yMin) / 10;
                     }
                     outerPointsY[0] = yMin;
                 }
-                if (yMax > outerPointsY[1]) {
-                    if (logX) {
-                        yLimits[1] = Math.pow(Math.log10(yMax) + (Math.log10(outerPointsY[0]) - Math.log10(yMax)) / 10, 10);
+                if (yMax >= outerPointsY[1]) {
+                    if (logY) {
+                        yLimits[1] = Math.pow(10, Math.log10(yMax) + (Math.log10(outerPointsY[0]) - Math.log10(yMax)) / 10);
                     } else {
                         yLimits[1] = yMax + (yMax - outerPointsY[0]) / 10;
                     }
                     outerPointsY[1] = yMax;
                 }
-            }
+            }*/
         }
     }
 
@@ -545,18 +540,52 @@ public class Graph2D extends Base2D {
             return this;
         }
 
-        public void setGraphLimits() {
-            if (!xLimitsCustom) {
-                if (x < outerPointsX[0]) {
+        @Override
+        public void setOuterPoints() {
+            if (graphElements.size() == 0) {
+                outerPointsX[0] = x;
+                outerPointsX[1] = x;
+                outerPointsY[0] = y;
+                outerPointsY[1] = y;
+                return;
+            }
+
+            if (x < outerPointsX[0]) {
+                outerPointsX[0] = x;
+            }
+            if (x > outerPointsX[1]) {
+                outerPointsX[1] = x;
+            }
+            if (y < outerPointsY[0]) {
+                outerPointsY[0] = y;
+            }
+            if (y > outerPointsY[1]) {
+                outerPointsY[1] = y;
+            }
+            /*if (!xLimitsCustom) {
+                if (graphElements.size() == 0) {
+                    outerPointsX[0] = x;
+                    outerPointsX[1] = x;
                     if (logX) {
-                        xLimits[0] = Math.exp(Math.log10(x) - (Math.log10(outerPointsX[1]) - Math.log10(x)) / 10);
+                        xLimits[0] = Math.pow(10, Math.log10(x) - 1);
+                        xLimits[1] = Math.pow(10, Math.log10(x) + 1);
+                    } else {
+                        xLimits[0] = x - 1;
+                        xLimits[1] = x + 1;
+                    }
+                }
+
+                if (x < outerPointsX[0]) {
+
+                    if (logX) {
+                        xLimits[0] = Math.pow(10, Math.log10(x) - (Math.log10(outerPointsX[1]) - Math.log10(x)) / 10);
                     } else {
                         xLimits[0] = x - (outerPointsX[1] - x) / 10;
                     }
                     outerPointsX[0] = x;
                 } else if (x > outerPointsX[1]) {
                     if (logX) {
-                        xLimits[1] = Math.exp(Math.log10(x) + (Math.log10(outerPointsX[0]) - Math.log10(x)) / 10);
+                        xLimits[1] = Math.pow(10, Math.log10(x) + (Math.log10(outerPointsX[0]) - Math.log10(x)) / 10);
                     } else {
                         xLimits[1] = x + (x - outerPointsX[0]) / 10;
                     }
@@ -565,22 +594,37 @@ public class Graph2D extends Base2D {
             }
 
             if (!yLimitsCustom) {
-                if (y < outerPointsY[0]) {
+
+                if (graphElements.size() == 0) {
+                    outerPointsY[0] = y;
+                    outerPointsY[1] = y;
                     if (logX) {
-                        yLimits[0] = Math.exp(Math.log10(y) - (Math.log10(outerPointsY[1]) - Math.log10(y)) / 10);
+                        yLimits[0] = Math.pow(10, Math.log10(y) - 1);
+                        yLimits[1] = Math.pow(10, Math.log10(y) + 1);
+                    } else {
+                        yLimits[0] = y - 1;
+                        yLimits[1] = y + 1;
+                    }
+                    //adapt for non log
+                }
+
+                if (y < outerPointsY[0]) {
+
+                    if (logY) {
+                        yLimits[0] = Math.pow(10, Math.log10(y) - (Math.log10(outerPointsY[1]) - Math.log10(y)) / 10);
                     } else {
                         yLimits[0] = y - (outerPointsY[1] - y) / 10;
                     }
                     outerPointsY[0] = y;
                 } else if (y > outerPointsY[1]) {
-                    if (logX) {
-                        yLimits[1] = Math.exp(Math.log10(y) + (Math.log10(outerPointsY[0]) - Math.log10(y)) / 10);
+                    if (logY) {
+                        yLimits[1] = Math.pow(10, Math.log10(y) + (Math.log10(outerPointsY[0]) - Math.log10(y)) / 10);
                     } else {
                         yLimits[1] = y + (y - outerPointsY[0]) / 10;
                     }
                     outerPointsY[1] = y;
                 }
-            }
+            }*/
         }
     }
 
@@ -688,4 +732,132 @@ public class Graph2D extends Base2D {
         }
     }
 
+    class Area extends GraphElement {
+
+        List<Double> x1;
+        List<Double> y1;
+        List<Double> x2;
+        List<Double> y2;
+
+        public Area(List<Double> x1, List<Double> y1, List<Double> x2, List<Double> y2, Color color) {
+            super(color);
+            this.x1 = x1;
+            this.y1 = y1;
+            this.x2 = x2;
+            this.y2 = y2;
+        }
+
+        @Override
+        public void draw(Graphics2D g) {
+            g.setPaint(color);
+
+            List<Integer> xScreen = new ArrayList<>();
+            x1.forEach(d -> xScreen.add((int) graphCoordsToScreenCoords(d, 0)[0]));
+            reverseList(x2).forEach(d -> xScreen.add((int) graphCoordsToScreenCoords((Double) d, 0)[0]));
+
+            List<Integer> yScreen = new ArrayList<>();
+            y1.forEach(d -> yScreen.add((int) graphCoordsToScreenCoords(0, d)[1]));
+            reverseList(y2).forEach(d -> yScreen.add((int) graphCoordsToScreenCoords(0, (Double) d)[1]));
+
+            g.fillPolygon(new Polygon(xScreen.stream().mapToInt(i->i).toArray(), yScreen.stream().mapToInt(i->i).toArray(), x1.size() + x2.size()));
+        }
+
+        public Area setPoints(List<Double> x1, List<Double> y1, List<Double> x2, List<Double> y2) {
+            this.x1 = x1;
+            this.y1 = y1;
+            this.x2 = x2;
+            this.y2 = y2;
+            return this;
+        }
+
+        @Override
+        public void setOuterPoints() {
+            List<Double> x = new ArrayList<>();
+            x.addAll(x1);
+            x.addAll(x2);
+            double xMin = x.stream().min(Double::compareTo).get();
+            double xMax = x.stream().max(Double::compareTo).get();
+
+            List<Double> y = new ArrayList<>();
+            y.addAll(y1);
+            y.addAll(y2);
+            double yMin = y.stream().min(Double::compareTo).get();
+            double yMax = y.stream().max(Double::compareTo).get();
+
+            if (graphElements.size() == 0) {
+                outerPointsX[0] = xMin;
+                outerPointsX[1] = xMax;
+                outerPointsY[0] = yMin;
+                outerPointsY[1] = yMax;
+                return;
+            }
+
+            if (xMin < outerPointsX[0]) {
+                outerPointsX[0] = xMin;
+            }
+            if (xMax > outerPointsX[1]) {
+                outerPointsX[1] = xMax;
+            }
+            if (yMin < outerPointsY[0]) {
+                outerPointsY[0] = yMin;
+            }
+            if (yMax > outerPointsY[1]) {
+                outerPointsY[1] = yMax;
+            }
+
+            /*
+            List<Double> x = new ArrayList<>();
+            x.addAll(x1);
+            x.addAll(x2);
+
+            List<Double> y = new ArrayList<>();
+            y.addAll(y1);
+            y.addAll(y2);
+
+            if (!xLimitsCustom) {
+
+                double xMin = x.stream().min(Double::compareTo).get();
+                double xMax = x.stream().max(Double::compareTo).get();
+
+                if (xMin < outerPointsX[0]) {
+                    if (logX) {
+                        xLimits[0] = Math.pow(Math.log10(xMin) - (Math.log10(outerPointsX[1]) - Math.log10(xMin)) / 10, 10);
+                    } else {
+                        xLimits[0] = xMin - (outerPointsX[1] - xMin) / 10;
+                    }
+                    outerPointsX[0] = xMin;
+                }
+                if (xMax > outerPointsX[1]) {
+                    if (logX) {
+                        xLimits[1] = Math.pow(Math.log10(xMax) + (Math.log10(outerPointsX[0]) - Math.log10(xMax)) / 10, 10);
+                    } else {
+                        xLimits[1] = xMax + (xMax - outerPointsX[0]) / 10;
+                    }
+                    outerPointsX[1] = xMax;
+                }
+            }
+
+            if (!yLimitsCustom) {
+                double yMin = y.stream().min(Double::compareTo).get();
+                double yMax = y.stream().max(Double::compareTo).get();
+
+                if (yMin < outerPointsY[0]) {
+                    if (logX) {
+                        yLimits[0] = Math.pow(Math.log10(yMin) - (Math.log10(outerPointsY[1]) - Math.log10(yMin)) / 10, 10);
+                    } else {
+                        yLimits[0] = yMin - (outerPointsY[1] - yMin) / 10;
+                    }
+                    outerPointsY[0] = yMin;
+                }
+                if (yMax > outerPointsY[1]) {
+                    if (logX) {
+                        yLimits[1] = Math.pow(Math.log10(yMax) + (Math.log10(outerPointsY[0]) - Math.log10(yMax)) / 10, 10);
+                    } else {
+                        yLimits[1] = yMax + (yMax - outerPointsY[0]) / 10;
+                    }
+                    outerPointsY[1] = yMax;
+                }
+            }*/
+        }
+    }
 }
